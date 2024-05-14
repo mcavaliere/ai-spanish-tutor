@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "@/app/globals.css";
 import { Inter as FontSans } from "next/font/google";
-
+import { AI } from "./actions";
 import { cn } from "@/lib/utils";
 
 const fontSans = FontSans({
@@ -20,15 +20,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={cn(
-          "min-h-screen bg-background font-sans antialiased",
-          fontSans.variable
-        )}
-      >
-        {children}
-      </body>
-    </html>
+    <AI>
+      <html lang="en" suppressHydrationWarning>
+        <body
+          className={cn(
+            "min-h-screen bg-background font-sans antialiased",
+            fontSans.variable
+          )}
+        >
+          {children}
+        </body>
+      </html>
+    </AI>
   );
 }
