@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import "@/app/globals.css";
 import { Inter as FontSans } from "next/font/google";
-import { AI, ServerMessage } from "./actions";
+
 import { cn } from "@/lib/utils";
-import { getChatHistory } from "@/lib/server/ChatMessage";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -21,20 +20,17 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   // get chat history from database
-  const history: ServerMessage[] = await getChatHistory();
 
   return (
-    <AI>
-      <html lang="en" suppressHydrationWarning>
-        <body
-          className={cn(
-            "min-h-screen bg-background font-sans antialiased",
-            fontSans.variable
-          )}
-        >
-          {children}
-        </body>
-      </html>
-    </AI>
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={cn(
+          "min-h-screen bg-background font-sans antialiased",
+          fontSans.variable
+        )}
+      >
+        {children}
+      </body>
+    </html>
   );
 }

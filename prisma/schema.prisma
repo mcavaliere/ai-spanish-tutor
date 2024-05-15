@@ -30,6 +30,6 @@ model ChatMessage {
   updatedAt      DateTime        @updatedAt
   content        String
   role           ChatMessageRole @default(user)
-  conversationId String
-  conversation   Conversation    @relation(fields: [conversationId], references: [id])
+  conversationId String?
+  conversation   Conversation?   @relation(fields: [conversationId], references: [id])
 }

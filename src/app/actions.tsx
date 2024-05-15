@@ -44,7 +44,7 @@ const initialUIState: {
   display: React.ReactNode;
 }[] = [];
 
-async function sendMessage(message: string) {
+async function sendMessage(conversationId: string, message: string) {
   "use server";
 
   const history = getMutableAIState();

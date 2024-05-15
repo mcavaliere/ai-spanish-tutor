@@ -7,7 +7,7 @@ import { Label } from "./ui/label";
 import { useActions } from "ai/rsc";
 import type { AI } from "@/app/actions";
 
-export const InputForm: React.FC = () => {
+export function InputForm({ conversationId }: { conversationId: string }) {
   const [formData, setFormData] = useState({
     input1: "",
     input2: "",
@@ -27,7 +27,9 @@ export const InputForm: React.FC = () => {
     e.preventDefault();
     console.log(`---------------- handleSubmit: `, formData.input2);
 
-    const response = await sendMessage(formData.input2);
+    const response = await sendMessage(conversationId, formData.input2);
+
+    console.log(`---------------- response in handlesubmit:  `, response);
   };
 
   return (
@@ -48,6 +50,6 @@ export const InputForm: React.FC = () => {
       </div>
     </form>
   );
-};
+}
 
 export default InputForm;

@@ -1,7 +1,6 @@
 import { ChatMessage, Conversation } from "@prisma/client";
 import { prisma } from "./prismaClientInstance";
 import { Prisma } from "@prisma/client";
-import { nanoid } from "nanoid";
 
 export async function saveChatMessages(
   messages: Prisma.ChatMessageCreateManyInput[]
@@ -13,6 +12,10 @@ export async function saveChatMessages(
   });
 }
 
-export async function getChatHistory() {
-  return await prisma.chatMessage.findMany();
+export async function getChatHistory(conversationId: Conversation["id"]) {
+  return await prisma.chatMessage.findMany({
+    where: {
+      conversationId,
+    },
+  });
 }
