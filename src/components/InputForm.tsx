@@ -9,6 +9,7 @@ import type { AI, ClientMessage } from "@/app/actions";
 
 export function InputForm() {
   const [conversation, setConversation] = useUIState();
+  const [currentChatResponse, setCurrentChatResponse] = useState("");
   const { sendMessage } = useActions<typeof AI>();
   const [formData, setFormData] = useState({
     input1: "",
@@ -30,10 +31,11 @@ export function InputForm() {
 
     (async () => {
       for await (const value of chatStream) {
-        setConversation((conversation) => ({
-          ...conversation,
-          messages: [...conversation.messages, value],
-        }));
+        setCurrentChatResponse(() => value as string);
+        // setConversation((conversation) => ({
+        //   ...conversation,
+        //   messages: [...conversation.messages, value],
+        // }));
       }
     })();
 
@@ -61,6 +63,8 @@ export function InputForm() {
               <li key={index}>{message}</li>
             )
           )}
+
+          {currentChatResponse && <li>{currentChatResponse}</li>}
         </ul>
       </div>
     </form>

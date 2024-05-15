@@ -37,6 +37,7 @@ const initialUIState: UIState = {
 
 async function sendMessage(message: string) {
   "use server";
+
   const chatStream = createStreamableValue("");
 
   const history = getMutableAIState();
@@ -61,18 +62,18 @@ async function sendMessage(message: string) {
   }).then(async (result) => {
     try {
       for await (const value of result.textStream) {
-        chatStream.update(value);
+        chatStream.append(value);
       }
     } finally {
+      chatStream.done();
+
       history.done({
         conversationId: existingHistory.conversationId,
         messages: [
           ...history.get().messages,
-          { role: "assistant", content: chatStream.value },
+          { role: "assistant", content: chatStream.value.curr },
         ],
       });
-
-      chatStream.done();
     }
   });
 
