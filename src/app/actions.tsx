@@ -5,11 +5,11 @@ import { generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { nanoid } from "nanoid";
 import { saveChatMessages } from "@/lib/server/ChatMessage";
-import { ChatMessageRole } from "@prisma/client";
+import { ChatMessageRole, Conversation } from "@prisma/client";
 import { upsertConversation } from "@/lib/server/Conversation";
 
 export interface ServerMessage {
-  role: "user" | "assistant" | "function";
+  role: "user" | "assistant" | "function" | "system";
   content: string;
 }
 
@@ -20,23 +20,20 @@ export interface ClientMessage {
 }
 
 // Define the AI state and UI state types
-export type AIState = Array<{
-  role: "user" | "assistant";
-  content: string;
-}>;
+export type AIState = {
+  conversationId?: Conversation["id"];
+  messages: ServerMessage[];
+};
 
-export type UIState = Array<{
-  id: string;
-  role: "user" | "assistant";
-  display: ReactNode;
-}>;
+// export type UIState = Array<{
+//   id: string;
+//   role: "user" | "assistant";
+//   display: ReactNode;
+// }>;
 
-const initialAIState: {
-  role: "user" | "assistant" | "system" | "function";
-  content: string;
-  id?: string;
-  name?: string;
-}[] = [];
+const initialAIState: AIState = {
+  messages: [],
+};
 
 // The initial UI state that the client will keep track of.
 const initialUIState: {
@@ -44,34 +41,42 @@ const initialUIState: {
   display: React.ReactNode;
 }[] = [];
 
-async function sendMessage(conversationId: string, message: string) {
+async function sendMessage(message: string) {
   "use server";
 
   const history = getMutableAIState();
 
-  const messages = [...history.get(), { role: "user", content: message }];
+  console.log(`---------------- history.get: `, history.get());
 
-  console.log(`---------------- sendMessage -> history:  `, history.get());
+  const existingHistory = history.get();
+
+  // Add the user message to the chat history.
+  const messages = [
+    ...existingHistory.messages,
+    { role: "user", content: message },
+  ];
+
+  console.log(`---------------- 1 `);
 
   // Update the AI state with the new user message.
-  history.update([...history.get(), { role: "user", content: message }]);
-
-  console.log(`---------------- sendMessage -> new history:  `, history.get());
-
-  const response = await generateText({
-    model: openai("gpt-3.5-turbo"),
-    messages: history.get(),
+  history.update({
+    messages,
   });
 
-  // console.log(`---------------- response:  `, response);
+  // Generate a response from the model using the chat history.
+  const response = await generateText({
+    model: openai("gpt-3.5-turbo"),
+    messages: history.get().messages,
+  });
 
   // Update the AI state again with the response from the model.
-  history.done([
-    ...history.get(),
-    { role: "assistant", content: response.text },
-  ]);
-
-  // console.log(`---------------- history:  `, history.get());
+  history.done({
+    conversationId: existingHistory.conversationId,
+    messages: [
+      ...history.get().messages,
+      { role: "assistant", content: response.text },
+    ],
+  });
 
   return history.get();
 }
@@ -86,18 +91,21 @@ export const AI = createAI({
   onSetAIState: async ({ state, done }) => {
     "use server";
 
-    console.log(`---------------- onSetAIState:  `, state);
+    console.log(`---------------- onSetAIState state:  `, state);
 
     if (done) {
-      const conversationId = nanoid();
+      if (!state.conversationId) {
+        console.log(`---------------- onSetAIState no conversationId found.`);
+        return;
+      }
 
-      await upsertConversation(conversationId);
+      await upsertConversation(state.conversationId);
 
       await saveChatMessages(
-        state.map(({ role, content }) => ({
+        state.conversationId,
+        state.messages.map(({ role, content }) => ({
           role: role as ChatMessageRole,
           content,
-          conversationId,
         }))
       );
     }
@@ -109,9 +117,6 @@ export const AI = createAI({
 
     console.log(`---------------- onGetUIState history:  `, history);
 
-    return history.map(({ role, content }) => ({
-      id: nanoid(),
-      role,
-    }));
+    return history;
   },
 });
