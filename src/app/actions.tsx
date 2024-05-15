@@ -13,11 +13,7 @@ export interface ServerMessage {
   content: string;
 }
 
-export interface ClientMessage {
-  id: string;
-  role: "user" | "assistant" | "function";
-  display: ReactNode;
-}
+export type ClientMessage = string;
 
 // Define the AI state and UI state types
 export type AIState = {
@@ -25,11 +21,10 @@ export type AIState = {
   messages: ServerMessage[];
 };
 
-// export type UIState = Array<{
-//   id: string;
-//   role: "user" | "assistant";
-//   display: ReactNode;
-// }>;
+export type UIState = {
+  conversationId?: Conversation["id"];
+  messages: ClientMessage[];
+};
 
 const initialAIState: AIState = {
   messages: [],
@@ -41,22 +36,18 @@ const initialUIState: {
   display: React.ReactNode;
 }[] = [];
 
-async function sendMessage(message: string) {
+async function sendMessage(message: string): Promise<UIState> {
   "use server";
 
   const history = getMutableAIState();
 
-  console.log(`---------------- history.get: `, history.get());
-
-  const existingHistory = history.get();
+  const existingHistory: AIState = history.get();
 
   // Add the user message to the chat history.
   const messages = [
     ...existingHistory.messages,
     { role: "user", content: message },
   ];
-
-  console.log(`---------------- 1 `);
 
   // Update the AI state with the new user message.
   history.update({
@@ -78,7 +69,16 @@ async function sendMessage(message: string) {
     ],
   });
 
-  return history.get();
+  const conversationId = history.get().conversationId;
+  const clientMessages = history
+    .get()
+    .messages.map((m: ServerMessage) => m.content);
+  console.log(`---------------- clientMessages:  `, clientMessages);
+
+  return {
+    conversationId,
+    messages: clientMessages,
+  };
 }
 
 // Create the AI provider with the initial states and allowed actions
@@ -110,13 +110,20 @@ export const AI = createAI({
       );
     }
   },
-  onGetUIState: async () => {
-    "use server";
+  // onGetUIState: async (): Promise<UIState> => {
+  //   "use server";
 
-    const history: ServerMessage[] = getAIState();
+  //   const history = getAIState();
 
-    console.log(`---------------- onGetUIState history:  `, history);
+  //   console.log(`---------------- onGetUIState history:  `, history);
 
-    return history;
-  },
+  //   const conversationId = history.conversationId;
+  //   const messages = history.messages.map((m: ServerMessage) => m.content);
+  //   console.log(`---------------- messages:  `, messages);
+
+  //   return {
+  //     conversationId,
+  //     messages,
+  //   };
+  // },
 });
