@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
-import { useActions, useUIState } from "ai/rsc";
+import { readStreamableValue, useActions, useUIState } from "ai/rsc";
 import type { AI, ClientMessage } from "@/app/actions";
 
 export function InputForm() {
@@ -26,8 +26,18 @@ export function InputForm() {
     e.preventDefault();
 
     const response = await sendMessage(formData.input1);
-    console.log(`---------------- sendMessage response:  `, response);
-    setConversation(response);
+    const chatStream = readStreamableValue(response.chatStream);
+
+    (async () => {
+      for await (const value of chatStream) {
+        setConversation((conversation) => ({
+          ...conversation,
+          messages: [...conversation.messages, value],
+        }));
+      }
+    })();
+
+    // setConversation(response);
   };
 
   return (

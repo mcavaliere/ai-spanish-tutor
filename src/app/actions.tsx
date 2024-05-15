@@ -1,7 +1,7 @@
-import { createAI, getAIState } from "ai/rsc";
+import { createAI, createStreamableValue, getAIState } from "ai/rsc";
 import { ReactNode } from "react";
 import { getMutableAIState } from "ai/rsc";
-import { generateText } from "ai";
+import { generateText, streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { nanoid } from "nanoid";
 import { saveChatMessages } from "@/lib/server/ChatMessage";
@@ -35,8 +35,9 @@ const initialUIState: UIState = {
   messages: [],
 };
 
-async function sendMessage(message: string): Promise<UIState> {
+async function sendMessage(message: string) {
   "use server";
+  const chatStream = createStreamableValue("");
 
   const history = getMutableAIState();
 
@@ -54,28 +55,29 @@ async function sendMessage(message: string): Promise<UIState> {
   });
 
   // Generate a response from the model using the chat history.
-  const response = await generateText({
+  streamText({
     model: openai("gpt-4o"),
     messages: history.get().messages,
-  });
+  }).then(async (result) => {
+    try {
+      for await (const value of result.textStream) {
+        chatStream.update(value);
+      }
+    } finally {
+      history.done({
+        conversationId: existingHistory.conversationId,
+        messages: [
+          ...history.get().messages,
+          { role: "assistant", content: chatStream.value },
+        ],
+      });
 
-  // Update the AI state again with the response from the model.
-  history.done({
-    conversationId: existingHistory.conversationId,
-    messages: [
-      ...history.get().messages,
-      { role: "assistant", content: response.text },
-    ],
+      chatStream.done();
+    }
   });
-
-  const conversationId = history.get().conversationId;
-  const clientMessages = history
-    .get()
-    .messages.map((m: ServerMessage) => m.content);
 
   return {
-    conversationId,
-    messages: clientMessages,
+    chatStream: chatStream.value,
   };
 }
 
