@@ -31,10 +31,9 @@ const initialAIState: AIState = {
 };
 
 // The initial UI state that the client will keep track of.
-const initialUIState: {
-  id: number;
-  display: React.ReactNode;
-}[] = [];
+const initialUIState: UIState = {
+  messages: [],
+};
 
 async function sendMessage(message: string): Promise<UIState> {
   "use server";
@@ -56,7 +55,7 @@ async function sendMessage(message: string): Promise<UIState> {
 
   // Generate a response from the model using the chat history.
   const response = await generateText({
-    model: openai("gpt-3.5-turbo"),
+    model: openai("gpt-4o"),
     messages: history.get().messages,
   });
 
@@ -73,7 +72,6 @@ async function sendMessage(message: string): Promise<UIState> {
   const clientMessages = history
     .get()
     .messages.map((m: ServerMessage) => m.content);
-  console.log(`---------------- clientMessages:  `, clientMessages);
 
   return {
     conversationId,
@@ -90,8 +88,6 @@ export const AI = createAI({
   initialUIState,
   onSetAIState: async ({ state, done }) => {
     "use server";
-
-    console.log(`---------------- onSetAIState state:  `, state);
 
     if (done) {
       if (!state.conversationId) {
@@ -110,20 +106,4 @@ export const AI = createAI({
       );
     }
   },
-  // onGetUIState: async (): Promise<UIState> => {
-  //   "use server";
-
-  //   const history = getAIState();
-
-  //   console.log(`---------------- onGetUIState history:  `, history);
-
-  //   const conversationId = history.conversationId;
-  //   const messages = history.messages.map((m: ServerMessage) => m.content);
-  //   console.log(`---------------- messages:  `, messages);
-
-  //   return {
-  //     conversationId,
-  //     messages,
-  //   };
-  // },
 });
