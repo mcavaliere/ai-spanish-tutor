@@ -50,6 +50,8 @@ async function sendMessage(message: string) {
     { role: "user", content: message },
   ];
 
+  console.log(`---------------- updating history:  `, messages);
+
   // Update the AI state with the new user message.
   history.update({
     messages,
@@ -67,12 +69,16 @@ async function sendMessage(message: string) {
     } finally {
       chatStream.done();
 
+      const messages = [
+        ...history.get().messages,
+        { role: "assistant", content: chatStream.value.curr },
+      ];
+
+      console.log(`---------------- final history:  `, messages);
+
       history.done({
         conversationId: existingHistory.conversationId,
-        messages: [
-          ...history.get().messages,
-          { role: "assistant", content: chatStream.value.curr },
-        ],
+        messages,
       });
     }
   });
