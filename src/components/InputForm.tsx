@@ -51,17 +51,6 @@ export function InputForm() {
     setFormData({ input1: "" });
   };
 
-  console.log(
-    `%ccurrentChatResponse in render: `,
-    "color: purple; font-weight: bold;",
-    currentChatResponse
-  );
-  console.log(
-    `%cconversation.messages: `,
-    "color: orange; font-weight: bold;",
-    conversation.messages
-  );
-
   return (
     <form onSubmit={handleSubmit}>
       <div className="flex flex-col gap-2">

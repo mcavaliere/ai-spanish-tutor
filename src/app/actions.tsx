@@ -9,7 +9,7 @@ import { ChatMessageRole, Conversation } from "@prisma/client";
 import { upsertConversation } from "@/lib/server/Conversation";
 
 export interface ServerMessage {
-  role: "user" | "assistant" | "function" | "system";
+  role: "user" | "assistant" | "system";
   content: string;
   id?: string;
 }
@@ -48,18 +48,13 @@ async function sendMessage(message: string) {
   // Add the user message to the chat history.
   const messages = [
     ...existingHistory.messages,
-    { role: "user", content: message },
+    { role: "user", content: message } as ServerMessage,
   ];
-
-  // Update the AI state with the new user message.
-  history.update({
-    messages,
-  });
 
   // Generate a response from the model using the chat history.
   streamText({
     model: openai("gpt-4o"),
-    messages: history.get().messages,
+    messages,
   }).then(async (result) => {
     try {
       for await (const value of result.textStream) {
@@ -68,14 +63,14 @@ async function sendMessage(message: string) {
     } finally {
       chatStream.done();
 
-      const messages = [
+      const finalMessages = [
         ...history.get().messages,
         { role: "assistant", content: chatStream.value.curr },
       ];
 
       history.done({
         conversationId: existingHistory.conversationId,
-        messages,
+        messages: finalMessages,
       });
     }
   });
@@ -99,10 +94,17 @@ export const AI = createAI({
   },
   initialAIState,
   initialUIState,
+
+  // Retrieve the UI state from the DB if a conversationId is present; get it from AIState otherwise.
   onGetUIState: async () => {
     "use server";
     const currentAIState: AIState = getAIState();
+    console.log(
+      `---------------- onGetUIState: currentAIState: ${currentAIState.conversationId}`
+    );
 
+    // This fallback is here mostly to make TS happy. The conversationId should always get
+    //  created in the server page before this function is called.
     if (!currentAIState.conversationId) {
       return aiStateToUIState(currentAIState);
     }
@@ -116,8 +118,11 @@ export const AI = createAI({
 
     return newUIState;
   },
+
+  // When we update the AI state, save the conversation to the database.
   onSetAIState: async ({ state, done }) => {
     "use server";
+    console.log(`---------------- onSetAIState `, state.conversationId);
 
     if (done) {
       if (!state.conversationId) {
