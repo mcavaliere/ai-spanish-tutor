@@ -1,7 +1,11 @@
-import { createAI, createStreamableValue, getAIState } from "ai/rsc";
-import { ReactNode } from "react";
+import {
+  createAI,
+  createStreamableValue,
+  getAIState,
+  readStreamableValue,
+} from "ai/rsc";
 import { getMutableAIState } from "ai/rsc";
-import { generateText, streamText } from "ai";
+import { streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { nanoid } from "nanoid";
 import { getChatHistory, saveChatMessages } from "@/lib/server/ChatMessage";
@@ -11,10 +15,13 @@ import { upsertConversation } from "@/lib/server/Conversation";
 export interface ServerMessage {
   role: "user" | "assistant" | "system";
   content: string;
-  id?: string;
+  id: string;
 }
 
-export type ClientMessage = string;
+export type ClientMessage = {
+  content: string;
+  id: string;
+};
 
 // Define the AI state and UI state types
 export type AIState = {
@@ -39,16 +46,17 @@ const initialUIState: UIState = {
 async function sendMessage(message: string) {
   "use server";
 
-  const chatStream = createStreamableValue("");
+  const chatStream = createStreamableValue<string>("");
 
   const history = getMutableAIState();
 
   const existingHistory: AIState = history.get();
 
   // Add the user message to the chat history.
-  const messages = [
+  // TODO: ensure messages have IDs.
+  const messages: ServerMessage[] = [
     ...existingHistory.messages,
-    { role: "user", content: message } as ServerMessage,
+    { role: "user", content: message, id: nanoid() },
   ];
 
   // Generate a response from the model using the chat history.
@@ -56,16 +64,18 @@ async function sendMessage(message: string) {
     model: openai("gpt-4o"),
     messages,
   }).then(async (result) => {
+    let finalValue = "";
     try {
       for await (const value of result.textStream) {
         chatStream.append(value);
+        finalValue += value;
       }
     } finally {
       chatStream.done();
 
       const finalMessages = [
         ...history.get().messages,
-        { role: "assistant", content: chatStream.value.curr },
+        { role: "assistant", content: finalValue, id: nanoid() },
       ];
 
       history.done({
@@ -83,7 +93,7 @@ async function sendMessage(message: string) {
 export function aiStateToUIState(aiState: AIState): UIState {
   return {
     conversationId: aiState.conversationId,
-    messages: aiState.messages.map(({ content }) => content),
+    messages: aiState.messages,
   };
 }
 
@@ -99,9 +109,6 @@ export const AI = createAI({
   onGetUIState: async () => {
     "use server";
     const currentAIState: AIState = getAIState();
-    console.log(
-      `---------------- onGetUIState: currentAIState: ${currentAIState.conversationId}`
-    );
 
     // This fallback is here mostly to make TS happy. The conversationId should always get
     //  created in the server page before this function is called.
@@ -113,16 +120,18 @@ export const AI = createAI({
 
     const newUIState: UIState = {
       conversationId: currentAIState.conversationId,
-      messages: messageHistory.map(({ content }) => content),
+      messages: messageHistory,
     };
 
     return newUIState;
   },
 
   // When we update the AI state, save the conversation to the database.
-  onSetAIState: async ({ state, done }) => {
+  onSetAIState: async (event) => {
     "use server";
-    console.log(`---------------- onSetAIState `, state.conversationId);
+    const { state, done } = event;
+
+    console.log(`---------------- onSetAIState `, event);
 
     if (done) {
       if (!state.conversationId) {
