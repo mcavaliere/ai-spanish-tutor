@@ -15,9 +15,9 @@ export async function saveChatMessages(
 }
 
 export async function getChatHistory(conversationId: Conversation["id"]) {
-  return await prisma.chatMessage.findMany({
+  return (await prisma.chatMessage.findMany({
     where: {
       conversationId,
     },
-  });
+  })) as ChatMessage[];
 }

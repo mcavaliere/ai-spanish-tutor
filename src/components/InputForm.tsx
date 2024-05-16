@@ -32,6 +32,7 @@ export function InputForm() {
     //  available before the function exits.
     let finalChatResponse = "";
 
+    // Stream the AI response.
     for await (const value of chatStream) {
       setCurrentChatResponse(value as string);
       finalChatResponse = value as string;
@@ -42,8 +43,10 @@ export function InputForm() {
       ...conversation,
       messages: [...conversation.messages, finalChatResponse],
     });
+
     // Clear the chat response value so we don't show it twice.
     setCurrentChatResponse("");
+
     // Clear the input field.
     setFormData({ input1: "" });
   };

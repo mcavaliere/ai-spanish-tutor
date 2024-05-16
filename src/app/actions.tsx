@@ -4,13 +4,14 @@ import { getMutableAIState } from "ai/rsc";
 import { generateText, streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { nanoid } from "nanoid";
-import { saveChatMessages } from "@/lib/server/ChatMessage";
+import { getChatHistory, saveChatMessages } from "@/lib/server/ChatMessage";
 import { ChatMessageRole, Conversation } from "@prisma/client";
 import { upsertConversation } from "@/lib/server/Conversation";
 
 export interface ServerMessage {
   role: "user" | "assistant" | "function" | "system";
   content: string;
+  id?: string;
 }
 
 export type ClientMessage = string;
@@ -50,8 +51,6 @@ async function sendMessage(message: string) {
     { role: "user", content: message },
   ];
 
-  console.log(`---------------- updating history:  `, messages);
-
   // Update the AI state with the new user message.
   history.update({
     messages,
@@ -74,8 +73,6 @@ async function sendMessage(message: string) {
         { role: "assistant", content: chatStream.value.curr },
       ];
 
-      console.log(`---------------- final history:  `, messages);
-
       history.done({
         conversationId: existingHistory.conversationId,
         messages,
@@ -88,6 +85,13 @@ async function sendMessage(message: string) {
   };
 }
 
+export function aiStateToUIState(aiState: AIState): UIState {
+  return {
+    conversationId: aiState.conversationId,
+    messages: aiState.messages.map(({ content }) => content),
+  };
+}
+
 // Create the AI provider with the initial states and allowed actions
 export const AI = createAI({
   actions: {
@@ -95,12 +99,28 @@ export const AI = createAI({
   },
   initialAIState,
   initialUIState,
+  onGetUIState: async () => {
+    "use server";
+    const currentAIState: AIState = getAIState();
+
+    if (!currentAIState.conversationId) {
+      return aiStateToUIState(currentAIState);
+    }
+
+    const messageHistory = await getChatHistory(currentAIState.conversationId);
+
+    const newUIState: UIState = {
+      conversationId: currentAIState.conversationId,
+      messages: messageHistory.map(({ content }) => content),
+    };
+
+    return newUIState;
+  },
   onSetAIState: async ({ state, done }) => {
     "use server";
 
     if (done) {
       if (!state.conversationId) {
-        console.log(`---------------- onSetAIState no conversationId found.`);
         return;
       }
 
