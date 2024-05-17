@@ -38,12 +38,28 @@ const initialUIState: UIState = {
   messages: [],
 };
 
+const systemPromptString = `
+  You're a Spanish language teacher. I'll be talking to you to improve my Spanish speaking skills.
+
+  By default, you can ask me a question in Spanish.
+
+  When you ask me a question, I will either attempt to answer it in Spanish or ask you a follow-up question in English. Things I may ask include asking you to translate the sentence to English, asking you to explain each word, or asking you to explain a single word or phrase.
+
+  If I respond in Spanish, correct me if I make a mistake. Then continue the conversation as you would with a student.
+
+  If I ask you for help, or ask you anything about the system, list out (in English) the things you can do as listed above.
+
+  If I input anything that I have not described above, list out (in English) the things you can do as listed above.
+
+
+`;
+
 async function sendMessage(message: string) {
   "use server";
 
   const chatStream = createStreamableValue<string>("");
 
-  const history = getMutableAIState();
+  const history = getMutableAIState<typeof AI>();
 
   const existingHistory: AIState = history.get();
 
@@ -52,6 +68,22 @@ async function sendMessage(message: string) {
     ...existingHistory.messages,
     { role: "user", content: message, id: nanoid() },
   ];
+
+  // Make sure we start with the system prompt.
+  if (
+    !existingHistory.messages?.length ||
+    existingHistory.messages[0].role !== "system"
+  ) {
+    messages.unshift({
+      role: "system",
+      content: systemPromptString,
+      id: nanoid(),
+    });
+  }
+
+  history.update({ messages });
+
+  console.log(`---------------- messages being sent to openai: `, messages);
 
   // Generate a response from the model using the chat history.
   streamText({
@@ -74,8 +106,13 @@ async function sendMessage(message: string) {
 
       const finalMessages = [
         ...history.get().messages,
-        { role: "assistant", content: finalValue, id: nanoid() },
+        { role: ChatMessageRole.assistant, content: finalValue, id: nanoid() },
       ];
+
+      console.log(
+        `---------------- saving final messages to history: `,
+        finalMessages
+      );
 
       history.done({
         conversationId: existingHistory.conversationId,
