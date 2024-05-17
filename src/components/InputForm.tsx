@@ -8,7 +8,7 @@ import { readStreamableValue, useActions, useUIState } from "ai/rsc";
 import type { AI, ClientMessage } from "@/app/actions";
 
 export function InputForm() {
-  const [conversation, setConversation] = useUIState();
+  const [conversation, setConversation] = useUIState<typeof AI>();
   const [currentChatResponse, setCurrentChatResponse] = useState("");
   const { sendMessage } = useActions<typeof AI>();
   const [formData, setFormData] = useState({
@@ -27,7 +27,9 @@ export function InputForm() {
     e.preventDefault();
 
     const response = await sendMessage(formData.input1);
+
     const chatStream = readStreamableValue(response.chatStream);
+
     // Track the message here as well as in state, since the updated state value won't be
     //  available before the function exits.
     let finalChatResponse = "";
@@ -41,7 +43,11 @@ export function InputForm() {
     // Add the AI response to the chat history.
     setConversation({
       ...conversation,
-      messages: [...conversation.messages, finalChatResponse],
+      messages: [
+        ...conversation.messages,
+        // The ID is a placeholder; this will get replaced when saving to the server.
+        { content: finalChatResponse, id: "ai" },
+      ],
     });
 
     // Clear the chat response value so we don't show it twice.
@@ -70,7 +76,7 @@ export function InputForm() {
           {/* Show the conversation history. */}
           {conversation.messages.map(
             (message: ClientMessage, index: number) => (
-              <li key={index}>{message}</li>
+              <li key={index}>{message.content}</li>
             )
           )}
 

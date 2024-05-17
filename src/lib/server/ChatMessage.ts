@@ -4,13 +4,14 @@ import { Prisma } from "@prisma/client";
 
 export async function saveChatMessages(
   conversationId: Conversation["id"],
-  messages: Prisma.ChatMessageCreateManyInput[]
+  messages: Prisma.AtLeast<Prisma.ChatMessageCreateManyInput, "id">[]
 ) {
   return await prisma.chatMessage.createMany({
     data: messages.map((m) => ({
       ...m,
       conversationId,
     })),
+    skipDuplicates: true,
   });
 }
 

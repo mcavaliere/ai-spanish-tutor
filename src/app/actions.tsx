@@ -1,9 +1,4 @@
-import {
-  createAI,
-  createStreamableValue,
-  getAIState,
-  readStreamableValue,
-} from "ai/rsc";
+import { createAI, createStreamableValue, getAIState } from "ai/rsc";
 import { getMutableAIState } from "ai/rsc";
 import { streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
@@ -53,7 +48,6 @@ async function sendMessage(message: string) {
   const existingHistory: AIState = history.get();
 
   // Add the user message to the chat history.
-  // TODO: ensure messages have IDs.
   const messages: ServerMessage[] = [
     ...existingHistory.messages,
     { role: "user", content: message, id: nanoid() },
@@ -131,8 +125,6 @@ export const AI = createAI({
     "use server";
     const { state, done } = event;
 
-    console.log(`---------------- onSetAIState `, event);
-
     if (done) {
       if (!state.conversationId) {
         return;
@@ -142,9 +134,10 @@ export const AI = createAI({
 
       await saveChatMessages(
         state.conversationId,
-        state.messages.map(({ role, content }) => ({
+        state.messages.map(({ role, content, id }) => ({
           role: role as ChatMessageRole,
           content,
+          id,
         }))
       );
     }
