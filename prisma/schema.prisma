@@ -16,7 +16,7 @@ datasource db {
 enum ChatMessageRole {
   user
   assistant
-  function
+  system
 }
 
 model Conversation {
