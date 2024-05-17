@@ -61,7 +61,7 @@ export function InputForm() {
     <form onSubmit={handleSubmit}>
       <div className="flex flex-col gap-2">
         <Label htmlFor="input1">
-          Say something, and I'll respond in Spanish.{" "}
+          Say something, and I&#39;ll respond in Spanish.{" "}
         </Label>
         <div className="flex flex-row gap-2">
           <Input
@@ -80,7 +80,7 @@ export function InputForm() {
             )
           )}
 
-          {/* Stream the current response. */}
+          {/* Stream the current response. Once it's finished, the value will move from currentChatResponse to conversation.messages above. */}
           {currentChatResponse && <li>{currentChatResponse}</li>}
         </ul>
       </div>

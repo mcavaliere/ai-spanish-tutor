@@ -58,7 +58,12 @@ async function sendMessage(message: string) {
     model: openai("gpt-4o"),
     messages,
   }).then(async (result) => {
+    // Track the value of the response as it comes in. We'll save this
+    //  to the database when done streaming.
+    // Note that we can grab this from chatStream.value.curr as well, but
+    //  this approach is discouraged by the Vercel SDK.
     let finalValue = "";
+
     try {
       for await (const value of result.textStream) {
         chatStream.append(value);
