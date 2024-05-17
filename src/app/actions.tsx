@@ -8,7 +8,7 @@ import { ChatMessageRole, Conversation } from "@prisma/client";
 import { upsertConversation } from "@/lib/server/Conversation";
 
 export interface ServerMessage {
-  role: "user" | "assistant" | "system";
+  role: ChatMessageRole;
   content: string;
   id: string;
 }
