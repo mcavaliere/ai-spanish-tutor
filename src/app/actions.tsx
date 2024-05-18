@@ -116,13 +116,6 @@ async function sendMessage(message: string) {
   };
 }
 
-export function aiStateToUIState(aiState: AIState): UIState {
-  return {
-    conversationId: aiState.conversationId,
-    messages: aiState.messages,
-  };
-}
-
 // Create the AI provider with the initial states and allowed actions
 export const AI = createAI({
   actions: {
@@ -130,48 +123,4 @@ export const AI = createAI({
   },
   initialAIState,
   initialUIState,
-
-  // Retrieve the UI state from the DB if a conversationId is present; get it from AIState otherwise.
-  // onGetUIState: async () => {
-  //   "use server";
-  //   const currentAIState: AIState = getAIState();
-
-  //   // This fallback is here mostly to make TS happy. The conversationId should always get
-  //   //  created in the server page before this function is called.
-  //   if (!currentAIState.conversationId) {
-  //     return aiStateToUIState(currentAIState);
-  //   }
-
-  //   const messageHistory = await getChatHistory(currentAIState.conversationId);
-
-  //   const newUIState: UIState = {
-  //     conversationId: currentAIState.conversationId,
-  //     messages: messageHistory,
-  //   };
-
-  //   return newUIState;
-  // },
-
-  // // When we update the AI state, save the conversation to the database.
-  // onSetAIState: async (event) => {
-  //   "use server";
-  //   const { state, done } = event;
-
-  //   if (done) {
-  //     if (!state.conversationId) {
-  //       return;
-  //     }
-
-  //     await upsertConversation(state.conversationId);
-
-  //     await saveChatMessages(
-  //       state.conversationId,
-  //       state.messages.map(({ role, content, id }) => ({
-  //         role: role as ChatMessageRole,
-  //         content,
-  //         id,
-  //       }))
-  //     );
-  //   }
-  // },
 });

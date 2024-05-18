@@ -3,10 +3,10 @@
 import React, { useState } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { Label } from "./ui/label";
 import { readStreamableValue, useActions, useUIState } from "ai/rsc";
 import type { AI, ClientMessage } from "@/app/actions";
 import { Bot, UserRound } from "lucide-react";
+import { nanoid } from "nanoid";
 
 export function MessageAvatar({ message }: { message: ClientMessage }) {
   let icon;
@@ -40,6 +40,15 @@ export function InputForm() {
 
     const response = await sendMessage(formData.input1);
 
+    // Add the user message to the chat history.
+    setConversation((conversation) => ({
+      ...conversation,
+      messages: [
+        ...conversation.messages,
+        { content: formData.input1, id: nanoid(), role: "user" },
+      ],
+    }));
+
     const chatStream = readStreamableValue(response.chatStream);
 
     // Track the message here as well as in state, since the updated state value won't be
@@ -53,14 +62,14 @@ export function InputForm() {
     }
 
     // Add the AI response to the chat history.
-    setConversation({
+    setConversation((conversation) => ({
       ...conversation,
       messages: [
         ...conversation.messages,
         // The ID is a placeholder; this will get replaced when saving to the server.
         { content: finalChatResponse, id: "ai", role: "assistant" },
       ],
-    });
+    }));
 
     // Clear the chat response value so we don't show it twice.
     setCurrentChatResponse("");
