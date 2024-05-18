@@ -3,12 +3,10 @@ import { getMutableAIState } from "ai/rsc";
 import { streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { nanoid } from "nanoid";
-import { getChatHistory, saveChatMessages } from "@/lib/server/ChatMessage";
 import { ChatMessageRole, Conversation } from "@prisma/client";
-import { upsertConversation } from "@/lib/server/Conversation";
 
 export interface ServerMessage {
-  role: ChatMessageRole;
+  role: "user" | "assistant" | "system";
   content: string;
   id: string;
 }
@@ -16,6 +14,7 @@ export interface ServerMessage {
 export type ClientMessage = {
   content: string;
   id: string;
+  role: "user" | "assistant" | "system";
 };
 
 // Define the AI state and UI state types
@@ -81,8 +80,6 @@ async function sendMessage(message: string) {
 
   history.update({ messages });
 
-  console.log(`---------------- messages being sent to openai: `, messages);
-
   // Generate a response from the model using the chat history.
   streamText({
     model: openai("gpt-4o"),
@@ -106,11 +103,6 @@ async function sendMessage(message: string) {
         ...history.get().messages,
         { role: ChatMessageRole.assistant, content: finalValue, id: nanoid() },
       ];
-
-      console.log(
-        `---------------- saving final messages to history: `,
-        finalMessages
-      );
 
       history.done({
         conversationId: existingHistory.conversationId,

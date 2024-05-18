@@ -4,14 +4,20 @@ import React, { useState } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
-import {
-  StreamableValue,
-  readStreamableValue,
-  useActions,
-  useStreamableValue,
-  useUIState,
-} from "ai/rsc";
+import { readStreamableValue, useActions, useUIState } from "ai/rsc";
 import type { AI, ClientMessage } from "@/app/actions";
+import { Bot, UserRound } from "lucide-react";
+
+export function MessageAvatar({ message }: { message: ClientMessage }) {
+  let icon;
+  if (message.role === "user") {
+    icon = <UserRound size={24} />;
+  } else if (message.role === "assistant") {
+    icon = <Bot size={24} />;
+  }
+
+  return <span className="rounded-full mr-2 bg-gray-dark p-2">{icon}</span>;
+}
 
 export function InputForm() {
   const [conversation, setConversation] = useUIState<typeof AI>();
@@ -52,7 +58,7 @@ export function InputForm() {
       messages: [
         ...conversation.messages,
         // The ID is a placeholder; this will get replaced when saving to the server.
-        { content: finalChatResponse, id: "ai" },
+        { content: finalChatResponse, id: "ai", role: "assistant" },
       ],
     });
 
@@ -66,29 +72,35 @@ export function InputForm() {
   return (
     <form onSubmit={handleSubmit}>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="input1">
-          Say something, and I&#39;ll respond in Spanish.{" "}
-        </Label>
+        {conversation.messages?.length ? (
+          <ul className="border border-black rounded-lg">
+            {/* Show the conversation history. */}
+            {conversation.messages.map(
+              (message: ClientMessage, index: number) => (
+                <li
+                  key={index}
+                  className="flex flex-row items-center border-b border-b-black last:border-b-0 p-2"
+                >
+                  <MessageAvatar message={message} />
+                  <span>{message.content}</span>
+                </li>
+              )
+            )}
+
+            {/* Stream the current response. Once it's finished, the value will move from currentChatResponse to conversation.messages above. */}
+            {currentChatResponse && <li>{currentChatResponse}</li>}
+          </ul>
+        ) : null}
         <div className="flex flex-row gap-2">
           <Input
             id="input1"
             name="input1"
             value={formData.input1}
             onChange={handleChange}
+            placeholder="Say something, and I&#39;ll respond in Spanish."
           />
           <Button type="submit">Submit</Button>
         </div>
-        <ul className="bg-slate-200 rounded-lg p-4">
-          {/* Show the conversation history. */}
-          {conversation.messages.map(
-            (message: ClientMessage, index: number) => (
-              <li key={index}>{message.content}</li>
-            )
-          )}
-
-          {/* Stream the current response. Once it's finished, the value will move from currentChatResponse to conversation.messages above. */}
-          {currentChatResponse && <li>{currentChatResponse}</li>}
-        </ul>
       </div>
     </form>
   );
