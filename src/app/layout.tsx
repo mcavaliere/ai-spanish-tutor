@@ -19,8 +19,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // get chat history from database
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body

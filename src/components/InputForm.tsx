@@ -4,7 +4,13 @@ import React, { useState } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
-import { readStreamableValue, useActions, useUIState } from "ai/rsc";
+import {
+  StreamableValue,
+  readStreamableValue,
+  useActions,
+  useStreamableValue,
+  useUIState,
+} from "ai/rsc";
 import type { AI, ClientMessage } from "@/app/actions";
 
 export function InputForm() {

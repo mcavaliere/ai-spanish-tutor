@@ -50,8 +50,6 @@ const systemPromptString = `
   If I ask you for help, or ask you anything about the system, list out (in English) the things you can do as listed above.
 
   If I input anything that I have not described above, list out (in English) the things you can do as listed above.
-
-
 `;
 
 async function sendMessage(message: string) {
@@ -142,46 +140,46 @@ export const AI = createAI({
   initialUIState,
 
   // Retrieve the UI state from the DB if a conversationId is present; get it from AIState otherwise.
-  onGetUIState: async () => {
-    "use server";
-    const currentAIState: AIState = getAIState();
+  // onGetUIState: async () => {
+  //   "use server";
+  //   const currentAIState: AIState = getAIState();
 
-    // This fallback is here mostly to make TS happy. The conversationId should always get
-    //  created in the server page before this function is called.
-    if (!currentAIState.conversationId) {
-      return aiStateToUIState(currentAIState);
-    }
+  //   // This fallback is here mostly to make TS happy. The conversationId should always get
+  //   //  created in the server page before this function is called.
+  //   if (!currentAIState.conversationId) {
+  //     return aiStateToUIState(currentAIState);
+  //   }
 
-    const messageHistory = await getChatHistory(currentAIState.conversationId);
+  //   const messageHistory = await getChatHistory(currentAIState.conversationId);
 
-    const newUIState: UIState = {
-      conversationId: currentAIState.conversationId,
-      messages: messageHistory,
-    };
+  //   const newUIState: UIState = {
+  //     conversationId: currentAIState.conversationId,
+  //     messages: messageHistory,
+  //   };
 
-    return newUIState;
-  },
+  //   return newUIState;
+  // },
 
-  // When we update the AI state, save the conversation to the database.
-  onSetAIState: async (event) => {
-    "use server";
-    const { state, done } = event;
+  // // When we update the AI state, save the conversation to the database.
+  // onSetAIState: async (event) => {
+  //   "use server";
+  //   const { state, done } = event;
 
-    if (done) {
-      if (!state.conversationId) {
-        return;
-      }
+  //   if (done) {
+  //     if (!state.conversationId) {
+  //       return;
+  //     }
 
-      await upsertConversation(state.conversationId);
+  //     await upsertConversation(state.conversationId);
 
-      await saveChatMessages(
-        state.conversationId,
-        state.messages.map(({ role, content, id }) => ({
-          role: role as ChatMessageRole,
-          content,
-          id,
-        }))
-      );
-    }
-  },
+  //     await saveChatMessages(
+  //       state.conversationId,
+  //       state.messages.map(({ role, content, id }) => ({
+  //         role: role as ChatMessageRole,
+  //         content,
+  //         id,
+  //       }))
+  //     );
+  //   }
+  // },
 });
