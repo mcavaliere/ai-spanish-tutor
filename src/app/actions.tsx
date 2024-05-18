@@ -42,13 +42,13 @@ const systemPromptString = `
 
   By default, you can ask me a question in Spanish.
 
-  When you ask me a question, I will either attempt to answer it in Spanish or ask you a follow-up question in English. Things I may ask include asking you to translate the sentence to English, asking you to explain each word, or asking you to explain a single word or phrase.
+  When you ask me a question, I will either attempt to answer it in Spanish or ask you a follow-up question in English. Things I may ask include asking you to translate the sentence to English, asking you to explain each word, or asking you to explain a single word or phrase. In all of these cases, respond in English.
 
-  If I respond in Spanish, correct me if I make a mistake. Then continue the conversation as you would with a student.
+  At any time, correct me (in English) if I make a mistake in my Spanish. Then continue the conversation.
 
-  If I ask you for help, or ask you anything about the system, list out (in English) the things you can do as listed above.
+  If I ask you for help (in English), or ask you anything about the system, list out (in English) the things you can do as listed above.
 
-  If I input anything that I have not described above, list out (in English) the things you can do as listed above.
+  If I input anything that I have not described above, respond in English with a list of the things you can do as described above.
 `;
 
 async function sendMessage(message: string) {
