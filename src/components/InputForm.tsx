@@ -8,6 +8,7 @@ import type { AI, ClientMessage } from "@/app/actions";
 import { Bot, UserRound } from "lucide-react";
 import { nanoid } from "nanoid";
 import { cn } from "@/lib/utils";
+import Markdown from "react-markdown";
 
 export function MessageAvatar({ message }: { message: ClientMessage }) {
   let icon;
@@ -34,7 +35,9 @@ export function MessageRow({ message }: { message: ClientMessage }) {
   return (
     <li className={classNames}>
       <MessageAvatar message={message} />
-      <span>{message.content}</span>
+      <div className="block [&>p]:mb-1">
+        <Markdown>{message.content}</Markdown>
+      </div>
     </li>
   );
 }
