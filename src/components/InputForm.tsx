@@ -7,16 +7,36 @@ import { readStreamableValue, useActions, useUIState } from "ai/rsc";
 import type { AI, ClientMessage } from "@/app/actions";
 import { Bot, UserRound } from "lucide-react";
 import { nanoid } from "nanoid";
+import { cn } from "@/lib/utils";
 
 export function MessageAvatar({ message }: { message: ClientMessage }) {
   let icon;
-  if (message.role === "user") {
-    icon = <UserRound size={24} />;
-  } else if (message.role === "assistant") {
+  if (message.role === "assistant") {
     icon = <Bot size={24} />;
+  } else {
+    icon = <UserRound size={24} />;
   }
 
-  return <span className="rounded-full mr-2 bg-gray-dark p-2">{icon}</span>;
+  const classNames = cn(
+    "rounded-full mr-2 bg-gray-dark p-2",
+    message.role == "assistant" ? "bg-melon-light" : "bg-mint-light"
+  );
+
+  return <span className={classNames}>{icon}</span>;
+}
+
+export function MessageRow({ message }: { message: ClientMessage }) {
+  const classNames = cn(
+    "flex flex-row items-center border-b border-b-black last:border-b-0 p-2",
+    message.role === "assistant" ? "bg-melon" : "bg-mint"
+  );
+
+  return (
+    <li className={classNames}>
+      <MessageAvatar message={message} />
+      <span>{message.content}</span>
+    </li>
+  );
 }
 
 export function InputForm() {
@@ -82,22 +102,25 @@ export function InputForm() {
     <form onSubmit={handleSubmit}>
       <div className="flex flex-col gap-2">
         {conversation.messages?.length ? (
-          <ul className="border border-black rounded-lg">
+          <ul className="border border-black rounded-lg overflow-hidden">
             {/* Show the conversation history. */}
             {conversation.messages.map(
               (message: ClientMessage, index: number) => (
-                <li
-                  key={index}
-                  className="flex flex-row items-center border-b border-b-black last:border-b-0 p-2"
-                >
-                  <MessageAvatar message={message} />
-                  <span>{message.content}</span>
-                </li>
+                <MessageRow key={index} message={message} />
               )
             )}
 
             {/* Stream the current response. Once it's finished, the value will move from currentChatResponse to conversation.messages above. */}
-            {currentChatResponse && <li>{currentChatResponse}</li>}
+            {currentChatResponse && (
+              <MessageRow
+                key="currentChatResponse"
+                message={{
+                  role: "assistant",
+                  content: currentChatResponse,
+                  id: "ai",
+                }}
+              />
+            )}
           </ul>
         ) : null}
         <div className="flex flex-row gap-2">

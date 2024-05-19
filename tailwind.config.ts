@@ -26,11 +26,19 @@ const config = {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         cream: {
-          DEFAULT: "hsl(#F6E5CE)",
+          DEFAULT: "#F6E5CE",
         },
         gray: {
           DEFAULT: "#E8E8E8",
           dark: "#6C6C6C",
+        },
+        mint: {
+          DEFAULT: "#C6E6D8",
+          light: "#E3F3EC",
+        },
+        melon: {
+          DEFAULT: "#FFBAAD",
+          light: "#FFDDD6",
         },
         primary: {
           DEFAULT: "hsl(var(--primary))",
