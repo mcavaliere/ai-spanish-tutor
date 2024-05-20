@@ -8,7 +8,7 @@ An AI chat interface for growing your Spanish-speaking skills.
 
 Built with:
 
-- [Next.js](https://nextjs.org/)
+- [Next.js](https://nextjs.org/) App Router
 - [Shadcn-ui](https://ui.shadcn.com/)
 - The [OpenAI API](https://platform.openai.com/docs/overview)
 - The [Vercel AI SDK](https://github.com/vercel/ai)
