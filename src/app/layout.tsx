@@ -4,6 +4,7 @@ import { Inter as FontSans } from "next/font/google";
 import { AI } from "./actions";
 
 import { cn } from "@/lib/utils";
+import { Footer } from "@/components/Footer";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -30,6 +31,7 @@ export default async function RootLayout({
           )}
         >
           {children}
+          <Footer />
         </body>
       </AI>
     </html>
