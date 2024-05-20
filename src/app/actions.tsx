@@ -3,7 +3,6 @@ import { getMutableAIState } from "ai/rsc";
 import { streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { nanoid } from "nanoid";
-import { ChatMessageRole, Conversation } from "@prisma/client";
 
 export interface ServerMessage {
   role: "user" | "assistant" | "system";
@@ -19,12 +18,12 @@ export type ClientMessage = {
 
 // Define the AI state and UI state types
 export type AIState = {
-  conversationId?: Conversation["id"];
+  conversationId?: string;
   messages: ServerMessage[];
 };
 
 export type UIState = {
-  conversationId?: Conversation["id"];
+  conversationId?: string;
   messages: ClientMessage[];
 };
 
@@ -101,7 +100,11 @@ async function sendMessage(message: string) {
 
       const finalMessages = [
         ...history.get().messages,
-        { role: ChatMessageRole.assistant, content: finalValue, id: nanoid() },
+        {
+          role: "assistant",
+          content: finalValue,
+          id: nanoid(),
+        } as ServerMessage,
       ];
 
       history.done({
