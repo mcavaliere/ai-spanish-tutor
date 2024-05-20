@@ -132,7 +132,7 @@ export function InputForm() {
             name="input1"
             value={formData.input1}
             onChange={handleChange}
-            placeholder="Say something, and I&#39;ll respond in Spanish."
+            placeholder="Say something, or type 'help' for instructions."
           />
           <Button type="submit">Submit</Button>
         </div>
