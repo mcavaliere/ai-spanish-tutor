@@ -12,9 +12,16 @@ const fontSans = FontSans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://ai-spanish-tutor.vercel.app"),
   title: "AI Spanish Tutor",
   description:
     "A conversational AI Spanish tutor. Built with GPT-4 and the Vercel AI SDK.",
+  alternates: {
+    canonical: "/",
+    languages: {
+      "en-US": "/en-US",
+    },
+  },
 };
 
 export default async function RootLayout({
