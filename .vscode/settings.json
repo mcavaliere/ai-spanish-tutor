@@ -18,5 +18,6 @@
     "titleBar.inactiveBackground": "#38054999",
     "titleBar.inactiveForeground": "#e7e7e799"
   },
-  "peacock.color": "#380549"
+  "peacock.color": "#380549",
+  "prettier.configPath": "./.prettierrc"
 }

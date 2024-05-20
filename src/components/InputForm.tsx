@@ -35,7 +35,7 @@ export function MessageRow({ message }: { message: ClientMessage }) {
   return (
     <li className={classNames}>
       <MessageAvatar message={message} />
-      <div className="block [&>p]:mb-1">
+      <div className="block [&>p]:mb-1 [&>ul]:list-disc [&>ul]:ml-4 [&>ul]:mb-1 [&>ol]:list-disc [&>ol]:ml-4 [&>ol]:mb-1">
         <Markdown>{message.content}</Markdown>
       </div>
     </li>
@@ -113,7 +113,8 @@ export function InputForm() {
               )
             )}
 
-            {/* Stream the current response. Once it's finished, the value will move from currentChatResponse to conversation.messages above. */}
+            {/* Stream the current response. Once it's finished, the value will move from
+                 currentChatResponse to conversation.messages above. */}
             {currentChatResponse && (
               <MessageRow
                 key="currentChatResponse"
