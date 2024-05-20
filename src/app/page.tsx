@@ -2,10 +2,12 @@ import InputForm from "@/components/InputForm";
 
 export default async function Home() {
   return (
-    <main className="flex min-h-screen p-4 h-full flex-col items-center justify-center p-24">
-      <h1 className="text-center text-3xl font-bold mb-4">AI Spanish Tutor</h1>
+    <main className="flex flex-col flex-1 h-full items-center justify-center md:max-w-screen-md mx-auto p-4 md:px-8">
+      <div className="w-full items-center align-center">
+        <h1 className="w-full text-center text-3xl font-bold mb-4">
+          AI Spanish Tutor
+        </h1>
 
-      <div className="md:max-w-screen-md h-full w-full mx-auto">
         <InputForm />
       </div>
     </main>

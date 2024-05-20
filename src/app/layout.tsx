@@ -23,11 +23,11 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className="h-full relative">
       <AI>
         <body
           className={cn(
-            "min-h-screen bg-background font-sans antialiased",
+            "min-h-[80vh] h-[80vh] bg-background font-sans antialiased",
             fontSans.variable
           )}
         >

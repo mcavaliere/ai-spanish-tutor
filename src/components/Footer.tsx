@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 export function Footer() {
   return (
-    <footer className="flex flex-row items-center justify-between w-full gap-2 p-4">
+    <footer className="absolute bottom-4 flex flex-row items-center justify-between w-full gap-2  px-4 md:px-8">
       <div className="flex flex-col whitespace-nowrap">
         <div className="flex flex-row mb-2 w-full">
           <span className="inline-block mr-2">Hecho con ❤️ por</span>
@@ -42,16 +42,17 @@ export function Footer() {
           </li>
         </ul>
       </div>
-      <Link
-        passHref
-        href="https://buy.stripe.com/bIY5nUag3bzC09O9AA"
-        target="_blank"
-      >
-        <Button className="ml-4" variant="outline">
-          <Coffee className="mr-2" />
-          Donate
-        </Button>
-      </Link>
+      <span className="flex flex-row items-center gap-2">
+        <span>Source code available at</span>
+        <Link
+          passHref
+          href="https://buy.stripe.com/bIY5nUag3bzC09O9AA"
+          target="_blank"
+          className="bg-foreground rounded-full p-1"
+        >
+          <Github className="size-4 stroke-background" />
+        </Link>
+      </span>
     </footer>
   );
 }
